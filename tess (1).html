@@ -1,0 +1,735 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialPlay AI - Social Media Downloader</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #7209b7;
+            --facebook: #4267B2;
+            --instagram: #E1306C;
+            --tiktok: #000000;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Loader Animation */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex: 1;
+        }
+
+        /* Input Form */
+        .input-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeUp 0.5s forwards 0.3s;
+        }
+
+        @keyframes fadeUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .input-container h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .input-container h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 3px;
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            outline: none;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .input-group button {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            margin-left: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-group button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group button i {
+            font-size: 1.2rem;
+        }
+
+        /* Platform Selection */
+        .platform-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .platform-option {
+            display: none;
+        }
+
+        .platform-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            transition: var(--transition);
+        }
+
+        .platform-label[for="facebook"]::before {
+            background-color: var(--facebook);
+        }
+
+        .platform-label[for="instagram"]::before {
+            background-color: var(--instagram);
+        }
+
+        .platform-label[for="tiktok"]::before {
+            background-color: var(--tiktok);
+        }
+
+        .platform-label i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .platform-label[for="facebook"] i {
+            color: var(--facebook);
+        }
+
+        .platform-label[for="instagram"] i {
+            color: var(--instagram);
+        }
+
+        .platform-label[for="tiktok"] i {
+            color: var(--tiktok);
+        }
+
+        .platform-option:checked + .platform-label {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .platform-option:checked + .platform-label::before {
+            height: 5px;
+        }
+
+        /* Results Container */
+        .results-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            display: none;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .results-container.active {
+            display: block;
+            animation: fadeUp 0.5s forwards;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .results-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-header .platform-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .results-header .platform-icon.facebook {
+            background-color: var(--facebook);
+        }
+
+        .results-header .platform-icon.instagram {
+            background-color: var(--instagram);
+        }
+
+        .results-header .platform-icon.tiktok {
+            background-color: var(--tiktok);
+        }
+
+        .close-results {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        .close-results:hover {
+            opacity: 1;
+        }
+
+        .preview {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+
+        .preview-image {
+            width: 120px;
+            height: 120px;
+            background: #e9ecef;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-info {
+            flex: 1;
+        }
+
+        .preview-info h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-info p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .download-options {
+            margin-top: 1.5rem;
+        }
+
+        .download-options h4 {
+            margin-bottom: 1rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius);
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .download-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        footer p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-group button {
+                margin-left: 0;
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .platform-label {
+                width: calc(33.333% - 1rem);
+                min-width: 90px;
+            }
+
+            .preview {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .preview-image {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .download-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Animations */
+        .shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+            20%, 80% {
+                transform: translate3d(2px, 0, 0);
+            }
+            30%, 50%, 70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+            40%, 60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e9ecef;
+            margin-top: 1rem;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader Animation -->
+    <div class="loader-container">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="logo-text">SocialPlay AI</div>
+        </div>
+        <p class="tagline">Download videos from your favorite social media platforms</p>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Input Form -->
+        <div class="input-container">
+            <h2>Download Media</h2>
+            
+            <!-- Platform Selection -->
+            <div class="platform-selector">
+                <input type="radio" name="platform" id="facebook" class="platform-option" checked>
+                <label for="facebook" class="platform-label">
+                    <i class="fab fa-facebook"></i>
+                    <span>Facebook</span>
+                </label>
+                
+                <input type="radio" name="platform" id="instagram" class="platform-option">
+                <label for="instagram" class="platform-label">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </label>
+                
+                <input type="radio" name="platform" id="tiktok" class="platform-option">
+                <label for="tiktok" class="platform-label">
+                    <i class="fab fa-tiktok"></i>
+                    <span>TikTok</span>
+                </label>
+            </div>
+            
+            <!-- URL Input -->
+            <div class="input-group">
+                <input type="text" id="url-input" placeholder="Paste video URL here...">
+                <button id="download-btn">
+                    <i class="fas fa-search"></i>
+                    Find
+                </button>
+            </div>
+            
+            <div class="progress-bar" id="progress-bar" style="display: none;">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+        
+        <!-- Results Container -->
+        <div class="results-container" id="results">
+            <div class="results-header">
+                <h3><div class="platform-icon facebook"><i class="fab fa-facebook"></i></div> Facebook Video</h3>
+                <button class="close-results" id="close-results"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="preview">
+                <div class="preview-image">
+                    <img id="preview-img" src="https://via.placeholder.com/120" alt="Video thumbnail">
+                </div>
+                <div class="preview-info">
+                    <h4 id="video-title">Video Title Will Appear Here</h4>
+                    <p id="video-author">Author/Channel name</p>
+                    <p id="video-duration"><i class="far fa-clock"></i> 00:00 • <i class="far fa-eye"></i> 0 views</p>
+                </div>
+            </div>
+            
+            <div class="download-options">
+                <h4>Available Download Options</h4>
+                <button class="download-btn">
+                    <i class="fas fa-download"></i>
+                    HD (1080p)
+                </button>
+                <button class="download-btn">
+                    <i class="fas fa-download"></i>
+                    SD (480p)
+                </button>
+                <button class="download-btn">
+                    <i class="fas fa-volume-up"></i>
+                    Audio Only
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 SocialPlay AI. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Hide loader on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelector('.loader-container').style.opacity = '0';
+                setTimeout(function() {
+                    document.querySelector('.loader-container').style.display = 'none';
+                }, 500);
+            }, 1500);
+        });
+
+        // Platform selection
+        const platformOptions = document.querySelectorAll('.platform-option');
+        const resultsContainer = document.getElementById('results');
+        const platformIcon = document.querySelector('.platform-icon');
+        const resultsHeader = document.querySelector('.results-header h3');
+        
+        platformOptions.forEach(option => {
+            option.addEventListener('change', function() {
+                // Update UI based on selected platform
+                platformIcon.className = 'platform-icon ' + this.id;
+                platformIcon.innerHTML = `<i class="fab fa-${this.id}"></i>`;
+                
+                const platformName = this.id.charAt(0).toUpperCase() + this.id.slice(1);
+                resultsHeader.innerHTML = `<div class="platform-icon ${this.id}"><i class="fab fa-${this.id}"></i></div> ${platformName} Video`;
+            });
+        });
+
+        // Download button functionality
+        const downloadBtn = document.getElementById('download-btn');
+        const urlInput = document.getElementById('url-input');
+        const progressBar = document.getElementById('progress-bar');
+        const progress = document.getElementById('progress');
+        const closeResults = document.getElementById('close-results');
+        
+        downloadBtn.addEventListener('click', function() {
+            if (!urlInput.value) {
+                urlInput.classList.add('shake');
+                setTimeout(() => {
+                    urlInput.classList.remove('shake');
+                }, 820);
+                return;
+            }
+            
+            // Show progress bar
+            progressBar.style.display = 'block';
+            
+            // Simulate processing
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    progressBar.style.display = 'none';
+                    
+                    // Show results
+                    resultsContainer.classList.add('active');
+                    
+                    // Update preview with random data (in a real app, this would come from API)
+                    updatePreview();
+                } else {
+                    width += 5;
+                    progress.style.width = width + '%';
+                }
+            }, 100);
+        });
+        
+        // Close results
+        closeResults.addEventListener('click', function() {
+            resultsContainer.classList.remove('active');
+        });
+        
+        // Function to update preview with random data (simulating API response)
+        function updatePreview() {
+            const selectedPlatform = document.querySelector('.platform-option:checked').id;
+            const previewImg = document.getElementById('preview-img');
+            const videoTitle = document.getElementById('video-title');
+            const videoAuthor = document.getElementById('video-author');
+            const videoDuration = document.getElementById('video-duration');
+            
+            // Random placeholder image based on platform
+            previewImg.src = `https://source.unsplash.com/random/120x120/?${selectedPlatform}`;
+            
+            // Random titles based on platform
+            const titles = {
+                facebook: [
+                    "Amazing moments captured on video",
+                    "How to make the perfect cake",
+                    "Funny pets compilation"
+                ],
+                instagram: [
+                    "Travel highlights from my trip",
+                    "New dance challenge trending",
+                    "Best food spots in the city"
+                ],
+                tiktok: [
+                    "Viral dance trend everyone's doing",
+                    "DIY home hacks you need to know",
+                    "Funny skit that got millions of views"
+                ]
+            };
+            
+            const authors = {
+                facebook: ["Creative Content", "Fun Videos", "Daily Moments"],
+                instagram: ["@traveler", "@foodie", "@lifestyle"],
+                tiktok: ["@viral_trends", "@dance_pro", "@comedy_skits"]
+            };
+            
+            // Set random values
+            const randomTitle = titles[selectedPlatform][Math.floor(Math.random() * titles[selectedPlatform].length)];
+            const randomAuthor = authors[selectedPlatform][Math.floor(Math.random() * authors[selectedPlatform].length)];
+            const randomMinutes = Math.floor(Math.random() * 10) + 1;
+            const randomSeconds = Math.floor(Math.random() * 60);
+            const randomViews = Math.floor(Math.random() * 1000000);
+            
+            videoTitle.textContent = randomTitle;
+            videoAuthor.textContent = randomAuthor;
+            videoDuration.innerHTML = `<i class="far fa-clock"></i> ${randomMinutes.toString().padStart(2, '0')}:${randomSeconds.toString().padStart(2, '0')} • <i class="far fa-eye"></i> ${randomViews.toLocaleString()} views`;
+        }
+    </script>
+</body>
+</html>
